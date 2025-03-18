@@ -15,7 +15,7 @@
         <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
     </PropertyGroup>
     
-    <PropertyGroup Condition="'$([MSBuild]::IsOSUnixLike())' == 'true'">
+    <PropertyGroup Condition="'$(ForceBuildWindows)' != 'true' and '$([MSBuild]::IsOSUnixLike())' == 'true'">
         <RuntimeIdentifiers>linux-x64</RuntimeIdentifiers>
         <RuntimeIdentifier>linux-x64</RuntimeIdentifier>
         <PlatformTarget>x64</PlatformTarget>
@@ -24,7 +24,7 @@
         <LibExt>.a</LibExt>
     </PropertyGroup>
 
-    <PropertyGroup Condition="'$([MSBuild]::IsOSUnixLike())' == 'false'">
+    <PropertyGroup Condition="'$(ForceBuildWindows)' == 'true' or '$([MSBuild]::IsOSUnixLike())' == 'false'">
         <RuntimeIdentifiers>win-x64;win-x86</RuntimeIdentifiers>
         <RuntimeIdentifier>win-$(Platform)</RuntimeIdentifier>
         <DefineConstants>$(DefineConstants);WINDOWS</DefineConstants>

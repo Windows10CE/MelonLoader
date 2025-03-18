@@ -10,6 +10,9 @@
         <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
         <NoWarn>LNK4099</NoWarn>
         <InvariantGlobalization>true</InvariantGlobalization>
+
+        <AcceptVSBuildToolsLicense>true</AcceptVSBuildToolsLicense>
+        <XwinArches Condition="'$(XWinArches)' == ''">x86,x86_64</XwinArches>
     </PropertyGroup>
     
     <PropertyGroup Condition="'$(RuntimeIdentifier.StartsWith(`linux-`))' == 'true'">
@@ -45,12 +48,13 @@
     </ItemGroup>
 
     <PropertyGroup>
-        <AppHostVersion>9.0.0</AppHostVersion>
+        <AppHostVersion>10.0.0-preview.2.25163.2</AppHostVersion>
         <AppHostPath>$(NuGetPackageRoot)runtime.$(RuntimeIdentifier).microsoft.netcore.dotnetapphost/$(AppHostVersion)/runtimes/$(RuntimeIdentifier)/native/libnethost$(LibExt)</AppHostPath>
     </PropertyGroup>
 
     <ItemGroup>
-        <PackageReference Include="Microsoft.NETCore.DotNetAppHost" Version="$(AppHostVersion)" PrivateAssets="All" />
+        <PackageReference Include="PublishAotCrossXWin" Version="1.0.0" PrivateAssets="all" />
+        <PackageReference Include="Microsoft.NETCore.DotNetAppHost" Version="$(AppHostVersion)" ExcludeAssets="all" PrivateAssets="All" />
         <PackageReference Include="Pastel" Version="6.0.1" />
         <PackageReference Include="Samboy063.Tomlet" Version="6.0.0" />
     </ItemGroup>

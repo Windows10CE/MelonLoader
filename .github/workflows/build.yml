@@ -13,64 +13,6 @@ on:
   workflow_dispatch:
 
 jobs:
-  build_windows:
-    name: Build Windows Binaries
-    runs-on: windows-latest
-    steps:
-      - uses: actions/checkout@v4
-      - name: Setup dotnet
-        uses: actions/setup-dotnet@v4
-        with:
-          dotnet-version: 9.0.x
-
-      - name: Restore Dependencies
-        run: dotnet restore
-
-      - name: Build Debug for win-x64
-        run: dotnet build --no-restore -c Debug -p:Platform="x64" -p:Version="${{ env.DEVVERSION }}${{ github.event_name != 'workflow_dispatch' && format('.{0}', github.run_number) || '' }}"
-
-      - name: Upload Debug for win-x64
-        uses: actions/upload-artifact@v4
-        with:
-          name: MelonLoader.Windows.x64.CI.Debug
-          path: Output/Debug/win-x64
-
-      - name: Build Release for win-x64
-        run: dotnet build --no-restore -c Release -p:Platform="x64" -p:Version="${{ env.DEVVERSION }}${{ github.event_name != 'workflow_dispatch' && format('.{0}', github.run_number) || '' }}"
-
-      - name: Upload Release for win-x64
-        uses: actions/upload-artifact@v4
-        with:
-          name: MelonLoader.Windows.x64.CI.Release
-          path: Output/Release/win-x64
-
-      - name: Build Debug for win-x86
-        run: dotnet build --no-restore -c Debug -p:Platform="x86" -p:Version="${{ env.DEVVERSION }}${{ github.event_name != 'workflow_dispatch' && format('.{0}', github.run_number) || '' }}"
-
-      - name: Upload Debug for win-x86
-        uses: actions/upload-artifact@v4
-        with:
-          name: MelonLoader.Windows.x86.CI.Debug
-          path: Output/Debug/win-x86
-
-      - name: Build Release for win-x86
-        run: dotnet build --no-restore -c Release -p:Platform="x86" -p:Version="${{ env.DEVVERSION }}${{ github.event_name != 'workflow_dispatch' && format('.{0}', github.run_number) || '' }}"
-
-      - name: Upload Release for win-x86
-        uses: actions/upload-artifact@v4
-        with:
-          name: MelonLoader.Windows.x86.CI.Release
-          path: Output/Release/win-x86
-
-      - name: Pack NuGet Package
-        run: dotnet pack --no-build -c Release -p:Platform="x64" -p:Version="${{ env.DEVVERSION }}${{ github.event_name != 'workflow_dispatch' && format('-ci.{0}', github.run_number) || '' }}"
-
-      - name: Upload NuGet Artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: MelonLoader.NuGet
-          path: Output/Release/win-x64/MelonLoader/LavaGang.MelonLoader.${{ env.DEVVERSION }}${{ github.event_name != 'workflow_dispatch' && format('-ci.{0}', github.run_number) || '' }}.nupkg
-  
   build_linux:
     name: Build Linux Binaries
     runs-on: ubuntu-latest
@@ -101,3 +43,92 @@ jobs:
         with:
           name: MelonLoader.Linux.x64.CI.Release
           path: Output/Release/linux-x64
+
+  build_windows_x64:
+    name: Build Windows x86_64 Binaries
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Setup dotnet
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 9.0.x
+
+      - name: Prepare xwin
+        run: |
+          sudo apt-get install lld
+          wget https://github.com/Jake-Shadle/xwin/releases/download/0.6.6-rc.2/xwin-0.6.6-rc.2-x86_64-unknown-linux-musl.tar.gz
+          tar -xvzf xwin-0.6.6-rc.2-x86_64-unknown-linux-musl.tar.gz
+          mkdir -p ~/.local/bin
+          cp xwin-0.6.6-rc.2-x86_64-unknown-linux-musl/xwin ~/.local/bin/xwin
+          echo ~/.local/bin >> $GITHUB_PATH
+
+      - name: Restore Dependencies
+        run: dotnet restore -p:ForceBuildWindows=true
+
+      - name: Build Debug for win-x64
+        run: dotnet build --no-restore -c Debug -p:ForceBuildWindows=true -p:Platform=x64 -p:XWinArches=x86_64 -p:Version="${{ env.DEVVERSION }}${{ github.event_name != 'workflow_dispatch' && format('.{0}', github.run_number) || '' }}"
+
+      - name: Upload Debug for win-x64
+        uses: actions/upload-artifact@v4
+        with:
+          name: MelonLoader.Windows.x64.CI.Debug
+          path: Output/Debug/win-x64
+
+      - name: Build Release for win-x64
+        run: dotnet build --no-restore -c Release -p:ForceBuildWindows=true -p:Platform=x64 -p:XWinArches=x86_64 -p:Version="${{ env.DEVVERSION }}${{ github.event_name != 'workflow_dispatch' && format('.{0}', github.run_number) || '' }}"
+
+      - name: Upload Release for win-x64
+        uses: actions/upload-artifact@v4
+        with:
+          name: MelonLoader.Windows.x64.CI.Release
+          path: Output/Release/win-x64
+
+      - name: Pack NuGet Package
+        run: dotnet pack --no-build -c Release -p:ForceBuildWindows=true -p:Platform=x64 -p:XWinArches=x86_64 -p:Version="${{ env.DEVVERSION }}${{ github.event_name != 'workflow_dispatch' && format('-ci.{0}', github.run_number) || '' }}"
+
+      - name: Upload NuGet Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: MelonLoader.NuGet
+          path: Output/Release/win-x64/MelonLoader/LavaGang.MelonLoader.${{ env.DEVVERSION }}${{ github.event_name != 'workflow_dispatch' && format('-ci.{0}', github.run_number) || '' }}.nupkg
+
+  build_windows_x86:
+    name: Build Windows x86 Binaries
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Setup dotnet
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 9.0.x
+
+      - name: Prepare xwin
+        run: |
+          sudo apt-get install lld
+          wget https://github.com/Jake-Shadle/xwin/releases/download/0.6.6-rc.2/xwin-0.6.6-rc.2-x86_64-unknown-linux-musl.tar.gz
+          tar -xvzf xwin-0.6.6-rc.2-x86_64-unknown-linux-musl.tar.gz
+          mkdir -p ~/.local/bin
+          cp xwin-0.6.6-rc.2-x86_64-unknown-linux-musl/xwin ~/.local/bin/xwin
+          echo ~/.local/bin >> $GITHUB_PATH
+
+      - name: Restore Dependencies
+        run: dotnet restore -p:ForceBuildWindows=true
+
+      - name: Build Debug for win-x86
+        run: dotnet build --no-restore -c Debug -p:ForceBuildWindows=true -p:Platform=x86 -p:XWinArches=x86 -p:Version="${{ env.DEVVERSION }}${{ github.event_name != 'workflow_dispatch' && format('.{0}', github.run_number) || '' }}"
+
+      - name: Upload Debug for win-x86
+        uses: actions/upload-artifact@v4
+        with:
+          name: MelonLoader.Windows.x86.CI.Debug
+          path: Output/Debug/win-x86
+
+      - name: Build Release for win-x86
+        run: dotnet build --no-restore -c Release -p:ForceBuildWindows=true -p:Platform=x86 -p:XWinArches=x86 -p:Version="${{ env.DEVVERSION }}${{ github.event_name != 'workflow_dispatch' && format('.{0}', github.run_number) || '' }}"
+
+      - name: Upload Release for win-x86
+        uses: actions/upload-artifact@v4
+        with:
+          name: MelonLoader.Windows.x86.CI.Release
+          path: Output/Release/win-x86
